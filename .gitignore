@@ -1,0 +1,4 @@
+# Ignore extension-less binaries
+*
+!/**/
+!*.*
