@@ -6,5 +6,8 @@
 **/*.out
 **/*.o
 
+**/Pipfile.lock
+.ipynb_checkpoints/
+
 # Ignore cs50-cli submodule for testing
 cli/

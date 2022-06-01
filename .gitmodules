@@ -1,3 +1,0 @@
-[submodule "cli"]
-	path = cli
-	url = git@github.com:cs50/cli.git
