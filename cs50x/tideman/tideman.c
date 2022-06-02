@@ -1,5 +1,7 @@
 #include <cs50.h>
 #include <stdio.h>
+#include <strings.h>
+#include <stdlib.h>
 
 // Max number of candidates
 #define MAX 9
@@ -8,7 +10,7 @@
 int preferences[MAX][MAX];
 
 // locked[i][j] means i is locked in over j
-bool locked[MAX][MAX];
+bool locked[MAX][MAX] = {{ false }};
 
 // Each pair has a winner, loser
 typedef struct
@@ -32,6 +34,8 @@ void add_pairs(void);
 void sort_pairs(void);
 void lock_pairs(void);
 void print_winner(void);
+int compare_win_strengths(const void *p, const void *q);
+bool check_is_cycle(pair p, int source);
 
 int main(int argc, string argv[])
 {
@@ -99,41 +103,126 @@ int main(int argc, string argv[])
 // Update ranks given a new vote
 bool vote(int rank, string name, int ranks[])
 {
-	// TODO
+	for (int i = 0; i < candidate_count; ++i) {
+		if (strcmp(name, candidates[i]) == 0)
+		{
+			ranks[rank] = i;
+			return true;
+		}
+	}
 	return false;
 }
 
 // Update preferences given one voter's ranks
 void record_preferences(int ranks[])
 {
-	// TODO
+	bool is_candidate_accounted[MAX] = { false };
+	for (int r = 0; r < candidate_count; ++r) {
+		int i = ranks[r];
+		for (int j = 0; j < candidate_count; ++j) {
+			preferences[i][j] = 0;
+			if (i != j && !is_candidate_accounted[j]) {
+				++preferences[i][j];
+			}
+			is_candidate_accounted[i] = true;
+		}
+	}
+
 	return;
 }
 
 // Record pairs of candidates where one is preferred over the other
 void add_pairs(void)
 {
-	// TODO
+	pair_count = 0;
+	for (int i = 0; i < candidate_count; ++i) {
+		for (int j = 0; j < candidate_count; j++) {
+			if (preferences[i][j] > preferences[j][i]) {
+				pairs[pair_count].winner = i;
+				pairs[pair_count].loser = j;
+			} else if (preferences[i][j] < preferences[j][i]) {
+				pairs[pair_count].winner = j;
+				pairs[pair_count].loser = i;
+			} else {
+				continue;
+			}
+			++pair_count;
+		}
+	}
 	return;
 }
 
 // Sort pairs in decreasing order by strength of victory
 void sort_pairs(void)
 {
-	// TODO
+	qsort(pairs, pair_count, sizeof(pair), compare_win_strengths);
 	return;
 }
 
 // Lock pairs into the candidate graph in order, without creating cycles
 void lock_pairs(void)
 {
-	// TODO
+	for (int i = 0; i < pair_count; ++i) {
+		locked[pairs[i].winner][pairs[i].loser] = true;
+		if (check_is_cycle(pairs[i], pairs[i].winner)) {
+			locked[pairs[i].winner][pairs[i].loser] = false;
+		}
+	}
 	return;
 }
 
 // Print the winner of the election
 void print_winner(void)
 {
-	// TODO
-	return;
+	for (int j = 0; j < candidate_count; j++) {
+		int inbound_edges = 0;
+		for (int i = 0; i < candidate_count; ++i) {
+			inbound_edges += (int)locked[i][j];
+		}
+		if (inbound_edges == 0) {
+			printf("%s", candidates[j]);
+			return;
+		}
+	}
+}
+
+
+int compare_win_strengths(const void *p, const void *q)
+{
+	/* Descending order */
+	if (preferences[((pair *)p)->winner][((pair *)p)->loser] > preferences[((pair *)q)->winner][((pair *)q)->loser]) {
+		return -1;
+	} else if (preferences[((pair *)p)->winner][((pair *)p)->loser] < preferences[((pair *)q)->winner][((pair *)q)->loser]) {
+		return 1;
+	} else {
+		return 0;
+	}
+}
+
+
+bool check_is_cycle(pair p, int source) {
+	/* Base case */
+	int checksum = 0;
+	for (int j = 0; j < candidate_count; j++) {
+		checksum += (int)locked[p.loser][j];
+	}
+	if (checksum == 0) {
+		return false;
+	} else if (p.loser == source) {
+		return true;
+
+	/* Recursive case */
+	} else {
+		int cycle_detected = 0;
+		for (int j = 0; j < candidate_count; j++) {
+			if (locked[p.loser][j]) {
+				pair tmp_p = {.winner = p.loser, .loser = j};
+				cycle_detected += (int)check_is_cycle(tmp_p, source);
+				if (cycle_detected) {
+					return true;
+				}
+			}
+		}
+	return false;
+	}
 }
