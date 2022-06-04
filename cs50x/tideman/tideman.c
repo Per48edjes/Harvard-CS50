@@ -7,7 +7,7 @@
 #define MAX 9
 
 // preferences[i][j] is number of voters who prefer i over j
-int preferences[MAX][MAX] = {{ 0 }};
+int preferences[MAX][MAX];
 
 // locked[i][j] means i is locked in over j
 bool locked[MAX][MAX];
@@ -117,19 +117,11 @@ bool vote(int rank, string name, int ranks[])
 // Update preferences given one voter's ranks
 void record_preferences(int ranks[])
 {
-	bool is_candidate_accounted[MAX] = {
-		false
-	};
-	for (int r = 0; r < candidate_count; ++r)
+	for (int i = 0; i < candidate_count; ++i)
 	{
-		int i = ranks[r];
-		for (int j = 0; j < candidate_count; ++j)
+		for (int j = i + 1; j < candidate_count; ++j)
 		{
-			if (i != j && !is_candidate_accounted[j])
-			{
-				++preferences[i][j];
-			}
-			is_candidate_accounted[i] = true;
+			++preferences[ranks[i]][ranks[j]];
 		}
 	}
 
@@ -139,15 +131,22 @@ void record_preferences(int ranks[])
 // Record pairs of candidates where one is preferred over the other
 void add_pairs(void)
 {
-	for (int i = 0; i < candidate_count; ++i) {
-		for (int j = i + 1; j < candidate_count; ++j) {
-			if (preferences[i][j] > preferences[j][i]) {
+	for (int i = 0; i < candidate_count; ++i)
+	{
+		for (int j = i + 1; j < candidate_count; ++j)
+		{
+			if (preferences[i][j] > preferences[j][i])
+			{
 				pairs[pair_count].winner = i;
 				pairs[pair_count].loser = j;
-			} else if (preferences[i][j] < preferences[j][i]) {
+			}
+			else if (preferences[i][j] < preferences[j][i])
+			{
 				pairs[pair_count].winner = j;
 				pairs[pair_count].loser = i;
-			} else {
+			}
+			else
+			{
 				continue;
 			}
 			++pair_count;
@@ -194,11 +193,18 @@ void print_winner(void)
 int compare_win_strengths(const void *p, const void *q)
 {
 	/* Descending order */
-	if (preferences[((pair *)p)->winner][((pair *)p)->loser] > preferences[((pair *)q)->winner][((pair *)q)->loser]) {
+	if (preferences[((pair *)p)->winner][((pair *)p)->loser] >
+	    preferences[((pair *)q)->winner][((pair *)q)->loser])
+	{
 		return -1;
-	} else if (preferences[((pair *)p)->winner][((pair *)p)->loser] < preferences[((pair *)q)->winner][((pair *)q)->loser]) {
+	}
+	else if (preferences[((pair *)p)->winner][((pair *)p)->loser] <
+	         preferences[((pair *)q)->winner][((pair *)q)->loser])
+	{
 		return 1;
-	} else {
+	}
+	else
+	{
 		return 0;
 	}
 }
