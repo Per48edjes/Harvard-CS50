@@ -11,3 +11,4 @@
 
 # Ignore cs50-cli submodule for testing
 cli/
+**/.bash_history

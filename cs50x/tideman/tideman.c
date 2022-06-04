@@ -1,16 +1,16 @@
 #include <cs50.h>
 #include <stdio.h>
-#include <strings.h>
+#include <string.h>
 #include <stdlib.h>
 
 // Max number of candidates
 #define MAX 9
 
 // preferences[i][j] is number of voters who prefer i over j
-int preferences[MAX][MAX];
+int preferences[MAX][MAX] = {{ 0 }};
 
 // locked[i][j] means i is locked in over j
-bool locked[MAX][MAX] = {{ false }};
+bool locked[MAX][MAX];
 
 // Each pair has a winner, loser
 typedef struct
@@ -103,7 +103,8 @@ int main(int argc, string argv[])
 // Update ranks given a new vote
 bool vote(int rank, string name, int ranks[])
 {
-	for (int i = 0; i < candidate_count; ++i) {
+	for (int i = 0; i < candidate_count; ++i)
+	{
 		if (strcmp(name, candidates[i]) == 0)
 		{
 			ranks[rank] = i;
@@ -116,12 +117,16 @@ bool vote(int rank, string name, int ranks[])
 // Update preferences given one voter's ranks
 void record_preferences(int ranks[])
 {
-	bool is_candidate_accounted[MAX] = { false };
-	for (int r = 0; r < candidate_count; ++r) {
+	bool is_candidate_accounted[MAX] = {
+		false
+	};
+	for (int r = 0; r < candidate_count; ++r)
+	{
 		int i = ranks[r];
-		for (int j = 0; j < candidate_count; ++j) {
-			preferences[i][j] = 0;
-			if (i != j && !is_candidate_accounted[j]) {
+		for (int j = 0; j < candidate_count; ++j)
+		{
+			if (i != j && !is_candidate_accounted[j])
+			{
 				++preferences[i][j];
 			}
 			is_candidate_accounted[i] = true;
@@ -134,9 +139,8 @@ void record_preferences(int ranks[])
 // Record pairs of candidates where one is preferred over the other
 void add_pairs(void)
 {
-	pair_count = 0;
 	for (int i = 0; i < candidate_count; ++i) {
-		for (int j = 0; j < candidate_count; j++) {
+		for (int j = i + 1; j < candidate_count; ++j) {
 			if (preferences[i][j] > preferences[j][i]) {
 				pairs[pair_count].winner = i;
 				pairs[pair_count].loser = j;
@@ -180,7 +184,7 @@ void print_winner(void)
 			inbound_edges += (int)locked[i][j];
 		}
 		if (inbound_edges == 0) {
-			printf("%s", candidates[j]);
+			printf("%s\n", candidates[j]);
 			return;
 		}
 	}
@@ -200,29 +204,27 @@ int compare_win_strengths(const void *p, const void *q)
 }
 
 
-bool check_is_cycle(pair p, int source) {
+bool check_is_cycle(pair p, int source)
+{
 	/* Base case */
-	int checksum = 0;
-	for (int j = 0; j < candidate_count; j++) {
-		checksum += (int)locked[p.loser][j];
-	}
-	if (checksum == 0) {
-		return false;
-	} else if (p.loser == source) {
+	if (p.loser == source)
+	{
 		return true;
+	}
 
 	/* Recursive case */
-	} else {
-		int cycle_detected = 0;
+	else
+	{
 		for (int j = 0; j < candidate_count; j++) {
 			if (locked[p.loser][j]) {
-				pair tmp_p = {.winner = p.loser, .loser = j};
-				cycle_detected += (int)check_is_cycle(tmp_p, source);
-				if (cycle_detected) {
+				pair next_p = {
+					.winner = p.loser, .loser = j
+				};
+				if (check_is_cycle(next_p, source)) {
 					return true;
 				}
 			}
 		}
-	return false;
+		return false;
 	}
 }
