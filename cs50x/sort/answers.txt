@@ -1,0 +1,11 @@
+sort1 uses: Bubble
+
+How do you know?: Slower algorithm for large N for worst case and random case, fast for best case for large N. This is consistent with Omega(N), O(N^2) time complexity.
+
+sort2 uses: Merge
+
+How do you know?: Easily the fastest algorithm for large N; performance invariant under best and worst case scenarios. This is consistent with Theta(NlogN) time complexity.
+
+sort3 uses: Selection
+
+How do you know?: Slower algorithm for large N; performance invariant under best and worst case scenarios. This is consistent with Theta(N^2) time complexity.
