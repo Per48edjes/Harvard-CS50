@@ -12,6 +12,36 @@ void swap_pixels(RGBTRIPLE *a, RGBTRIPLE *b)
 	return;
 }
 
+// Helper function to apply blur algorithm to pixel
+RGBTRIPLE blurrer(int i, int j, int height, int width, RGBTRIPLE image[height][width])
+{
+	RGBTRIPLE new_pixel;
+	int offsets[3] = { -1, 0, 1 };
+
+	int red_value = 0;
+	int green_value = 0;
+	int blue_value = 0;
+	int pixel_count = 0;
+
+	for (int x = 0; x < 3; x++)
+	{
+		for (int y = 0; y < 3; y++)
+		{
+			if ((i+offsets[x] >= 0) && (i+offsets[x] < height) && (j+offsets[y] >=0) && (j+offsets[y] < width))
+			{
+				++pixel_count;
+				red_value += image[i+offsets[x]][j+offsets[y]].rgbtRed;
+				green_value += image[i+offsets[x]][j+offsets[y]].rgbtGreen;
+				blue_value += image[i+offsets[x]][j+offsets[y]].rgbtBlue;
+			}
+		}
+	}
+	new_pixel.rgbtRed = (int)round((float)red_value / pixel_count);
+	new_pixel.rgbtGreen = (int)round((float)green_value / pixel_count);
+	new_pixel.rgbtBlue = (int)round((float)blue_value / pixel_count);
+	return new_pixel;
+}
+
 // Helper function to apply Sobel algorithm to pixel
 RGBTRIPLE sobel(int i, int j, int height, int width, RGBTRIPLE image[height][width])
 {
@@ -79,32 +109,12 @@ void reflect(int height, int width, RGBTRIPLE image[height][width])
 // Blur image
 void blur(int height, int width, RGBTRIPLE image[height][width])
 {
-	int offsets[3] = { -1, 0, 1 };
 	RGBTRIPLE new_image[height][width];
 
 	for (int i = 0; i < height; ++i) {
 		for (int j = 0; j < width; ++j)
 		{
-			int red_value = 0;
-			int green_value = 0;
-			int blue_value = 0;
-			int pixel_count = 0;
-			for (int x = 0; x < 3; x++)
-			{
-				for (int y = 0; y < 3; y++)
-				{
-					if ((i+offsets[x] >= 0) && (i+offsets[x] < height) && (j+offsets[y] >=0) && (j+offsets[y] < width))
-					{
-						++pixel_count;
-						red_value += image[i+offsets[x]][j+offsets[y]].rgbtRed;
-						green_value += image[i+offsets[x]][j+offsets[y]].rgbtGreen;
-						blue_value += image[i+offsets[x]][j+offsets[y]].rgbtBlue;
-					}
-				}
-			}
-			new_image[i][j].rgbtRed = (int)round((float)red_value / pixel_count);
-			new_image[i][j].rgbtGreen = (int)round((float)green_value / pixel_count);
-			new_image[i][j].rgbtBlue = (int)round((float)blue_value / pixel_count);
+			new_image[i][j] = blurrer(i, j, height, width, image);
 		}
 	}
 	for (int i = 0; i < height; ++i)
